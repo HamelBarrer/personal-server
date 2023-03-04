@@ -1,10 +1,10 @@
 import { SignJWT, jwtVerify } from 'jose';
 
-export const creationToken = async (value: any) => {
+export const creationToken = async (userId: number) => {
   const secret = new TextEncoder().encode(process.env.SECRET_KEY);
   const alg = 'HS256';
 
-  const jwt = await new SignJWT({ data: value })
+  const jwt = await new SignJWT({ userId })
     .setProtectedHeader({ alg })
     .setIssuedAt()
     .setExpirationTime('1h')
@@ -13,10 +13,14 @@ export const creationToken = async (value: any) => {
   return jwt;
 };
 
-export const validationToken = async (token: string) => {
-  const secret = new TextEncoder().encode(process.env.SECRET_KEY);
+export const validToken = async (token: string): Promise<number | null> => {
+  try {
+    const secret = new TextEncoder().encode(process.env.SECRET_KEY);
 
-  const { payload } = await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(token, secret);
 
-  console.log(payload);
+    return payload.userId as number;
+  } catch (error) {
+    return null;
+  }
 };
